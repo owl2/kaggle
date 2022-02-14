@@ -127,3 +127,9 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# User-specific stuff
+.idea/*
+
+# All datas
+00_data/*
