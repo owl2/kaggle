@@ -130,6 +130,7 @@ dmypy.json
 
 # User-specific stuff
 .idea/*
+*/.idea/*
 
 # All datas
-00_data/*
+*/00_data/*
