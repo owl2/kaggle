@@ -19,14 +19,30 @@ def get_number_articles_sold(customer, period_begin, period_end):
     return train
 
 
-def get_number_sales_per_day(customer=None, begin=None, end=None):
-    train = get_transaction_train_df()
+def get_number_sales_per_day(transaction_train_df=None, customer=None, begin=None, end=None):
+    if transaction_train_df is None:
+        transaction_train_df = get_transaction_train_df()
 
     if end is not None and begin is not None:
-        sales = train[(train["t_dat"] >= begin) & (train["t_dat"] <= end)]
+        sales = transaction_train_df[(transaction_train_df["t_dat"] >= begin) & (transaction_train_df["t_dat"] <= end)]
         return sales.groupby(["t_dat"]).t_dat.count()
     else:
-        return train.groupby(["t_dat"]).t_dat.count()
+        return transaction_train_df.groupby(["t_dat"]).t_dat.count()
+
+
+def get_number_sales_per_month(transaction_train_df=None, customer=None, begin=None, end=None):
+    if transaction_train_df is None:
+        transaction_train_df = get_transaction_train_df()
+
+    add_year_month_column(transaction_train_df, "t_dat")
+
+    return transaction_train_df.groupby(["year-month"]).t_dat.count()
+
+
+def add_year_month_column(df, date_column):
+    df["year-month"] = df[date_column].apply(lambda x: str(x.year) + "-" + str(x.month).zfill(2))
+
+    return df
 
 
 def adf_test(series, title=""):

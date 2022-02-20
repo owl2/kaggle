@@ -134,3 +134,6 @@ dmypy.json
 
 # All datas
 */00_data/*
+
+.DS_Store
+hm/.DS_Store
