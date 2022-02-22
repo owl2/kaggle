@@ -1,5 +1,67 @@
 import pandas as pd
 from statsmodels.tsa.stattools import adfuller
+from pyspark.sql import SparkSession
+
+
+spark = SparkSession.builder.appName("kaggle_hm_app").getOrCreate()
+transactions_train_df = spark.read.option("header", True).csv(
+    "./00_data/transactions_train.csv"
+)
+articles_df = spark.read.option("header", True).csv("./00_data/articles.csv")
+customers_df = spark.read.option("header", True).csv("./00_data/customers.csv")
+
+
+def spark_daily_sales(customer_id=None, begin=None, end=None):
+    if all(v is None for v in [customer_id, begin, end]):
+        print("All the dataset will be returned.")
+        return (
+            transactions_train_df.groupby(["t_dat", "customer_id"]).count().toPandas()
+        )
+
+    if (customer_id is not None) & (begin is None) & (end is None):
+        print(f"All the dataset will be returned for customer : {customer_id}")
+        return (
+            transactions_train_df.filter(
+                transactions_train_df["customer_id"] == customer_id
+            )
+            .groupBy(["t_dat", "customer_id"])
+            .count()
+            .toPandas()
+        )
+
+    if (customer_id == "All") & (begin is not None) & (end is not None):
+        print(f"Return all sales between {begin} and {end}")
+        return (
+            transactions_train_df.filter(
+                (transactions_train_df["t_dat"] >= begin)
+                & (transactions_train_df["t_dat"] <= end)
+            )
+            .groupBy(["t_dat", "customer_id"])
+            .count()
+            .toPandas()
+        )
+
+    if (customer_id is None) & (begin is not None) & (end is not None):
+        print(f"Return all sales between {begin} and {end}")
+        return (
+            transactions_train_df.filter(
+                (transactions_train_df["t_dat"] >= begin)
+                & (transactions_train_df["t_dat"] <= end)
+            )
+            .groupBy(["t_dat"])
+            .count()
+            .toPandas()
+        )
+
+    if all(v is not None for v in [customer_id, begin, end]):
+        print(f"All the dataset will be returned for customer : {customer_id}")
+        print(f"Between {begin} and {end}")
+        return transactions_train_df.filter(
+            transactions_train_df["customer_id"]
+            == customer_id & transactions_train_df["t_dat"]
+            >= begin & transactions_train_df["t_dat"]
+            <= end
+        ).toPandas()
 
 
 def get_transaction_train_df():
